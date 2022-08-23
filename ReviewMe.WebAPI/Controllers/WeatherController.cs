@@ -1,24 +1,28 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using ReviewMe.WebAPI.DataAccess;
+using ReviewMe.WebAPI.Infrastructure;
 using ReviewMe.WebAPI.Model;
 
 namespace ReviewMe.WebAPI.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class WeatherForecastController : ControllerBase
+    public class WeatherController : ControllerBase
     {
-        private readonly ILogger<WeatherForecastController> _logger;
+        private readonly ILogger<WeatherController> _logger;
+        private readonly IOptions<AppSettings> _options;
 
-        public WeatherForecastController(ILogger<WeatherForecastController> logger)
+        public WeatherController(ILogger<WeatherController> logger, IOptions<AppSettings> options)
         {
             _logger = logger;
+            _options = options;
         }
 
         /// <summary>
         /// Возвращает краткий прогноз погоды
         /// </summary>
-        [HttpGet(Name = "GetWeatherForecastShort")]
+        [HttpGet("GetForecastShort")]
         public WeatherForecast GetShortForecst(DateTime t, string city, CancellationToken ct = default)
         {
             // Проверяем аргументы
@@ -47,14 +51,14 @@ namespace ReviewMe.WebAPI.Controllers
             }
 
             // Запрашиваем данные из БД
-            var repo = HttpContext.RequestServices.GetRequiredService<WeatherRepository>();
+            var repo = new WeatherRepository(_options);
             return repo.GetWeatherForecast(t, city, ct).Result;
         }
 
         /// <summary>
         /// Возвращает подробный прогноз погоды (по часам)
         /// </summary>
-        [HttpGet(Name = "GetWeatherForecastFull")]
+        [HttpGet("GetForecastFull")]
         public WeatherForecast GetFullForecast(DateTime t, string city, CancellationToken ct = default)
         {
             throw new NotImplementedException();
